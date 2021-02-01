@@ -16,6 +16,18 @@ public class Inventory : MonoBehaviour
 			return;
 
 		_itemsInInventory.Add(inputItem.Item);
-		Destroy(inputItem.gameObject);
+		Destroy(inputItem.gameObject);		//Заменить на пулл
+	}
+
+	private void TakeItem(Item outputItem)
+	{
+		if (!_itemsInInventory.Contains(outputItem))
+		{
+			Debug.LogWarning("Item" + outputItem.ItemName + " not found");
+			return;
+		}
+
+		Instantiate(outputItem.Prefab);		//Заменить на пулл
+		_itemsInInventory.Remove(outputItem);
 	}
 }
