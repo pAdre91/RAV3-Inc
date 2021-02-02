@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &766235932
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 766235933}
+  m_Layer: 0
+  m_Name: UnloadingArea
+  m_TagString: Untagged
+  m_Icon: {fileID: -1412012063857583412, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &766235933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766235932}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 9.24, y: -0.5, z: -8.94}
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_Children: []
+  m_Father: {fileID: 8358600044982849286}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1932845940
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,6 +223,7 @@ Transform:
   - {fileID: 1932845944}
   - {fileID: 7989862916786652036}
   - {fileID: 8154332259947453285}
+  - {fileID: 766235933}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -284,6 +315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 510da3075ab40684f8b887a73a1a196d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _inventoryUI: {fileID: 0}
   _snapPoints:
   - _point: {fileID: 1932845944}
     _pointType: 2
@@ -295,7 +327,7 @@ MonoBehaviour:
     _pointType: 3
     _pointRenderer: {fileID: 6073999862782976366}
   _bagCollider: {fileID: 3510244708454226414}
-  _unloadingPoint: {fileID: 0}
+  _unloadingPoint: {fileID: 766235933}
 --- !u!1 &8913545871528191008
 GameObject:
   m_ObjectHideFlags: 0

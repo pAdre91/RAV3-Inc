@@ -1,84 +1,88 @@
-﻿using System;
+﻿using GameCore;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventoryUI : MonoBehaviour
+namespace UI
 {
-	[SerializeField] List<InventoryCell> _holdersUI;
-
-	public static Action<Item> TakeItem;
-
-	public void DisplayInventory()
+	public class InventoryUI : MonoBehaviour
 	{
-		gameObject.SetActive(true);
-	}
+		[SerializeField] List<InventoryCell> _holdersUI;
 
-	public void CloseInventory()
-	{
-		foreach (var cell in _holdersUI)
+		public static Action<Item> TakeItem;
+
+		public void DisplayInventory()
 		{
-			if (RectTransformUtility.RectangleContainsScreenPoint(cell.GetComponent<RectTransform>(), Input.mousePosition) && cell.CurrentItem != null)
+			gameObject.SetActive(true);
+		}
+
+		public void CloseInventory()
+		{
+			foreach (var cell in _holdersUI)
 			{
-				TakeItem?.Invoke(cell.CurrentItem);
-				break;
+				if (RectTransformUtility.RectangleContainsScreenPoint(cell.GetComponent<RectTransform>(), Input.mousePosition) && cell.CurrentItem != null)
+				{
+					TakeItem?.Invoke(cell.CurrentItem);
+					break;
+				}
 			}
+
+			gameObject.SetActive(false);
 		}
 
-		gameObject.SetActive(false);
-	}
-
-	public void DisplayItem(Item item, int count)
-	{
-		if (item == null)
+		public void DisplayItem(Item item, int count)
 		{
-			Debug.LogWarning("Empty item to remove");
-			return;
+			if (item == null)
+			{
+				Debug.LogWarning("Empty item to remove");
+				return;
+			}
+			InventoryCell holderForInputItem = GetHolderByType(item.ItemType);
+
+			if (holderForInputItem == null)
+				return;
+
+			holderForInputItem.CurrentItem = item;
+			holderForInputItem.Icon.sprite = item.Icon;
+			holderForInputItem.ItemName.text = item.ItemName;
+			holderForInputItem.ItemsCount.text = count.ToString();
 		}
-		InventoryCell holderForInputItem = GetHolderByType(item.ItemType);
 
-		if (holderForInputItem == null)
-			return;
-
-		holderForInputItem.CurrentItem = item;
-		holderForInputItem.Icon.sprite = item.Icon;
-		holderForInputItem.ItemName.text = item.ItemName;
-		holderForInputItem.ItemsCount.text = count.ToString();
-	}
-
-	public void RemoveItem(Item item, int remainingItems = 0)
-	{
-		if (item == null)
+		public void RemoveItem(Item item, int remainingItems = 0)
 		{
-			Debug.LogWarning("Empty item to remove");
-			return;
+			if (item == null)
+			{
+				Debug.LogWarning("Empty item to remove");
+				return;
+			}
+
+			InventoryCell holderForOutputItem = GetHolderByType(item.ItemType);
+
+			if (holderForOutputItem == null)
+				return;
+
+			if (remainingItems > 0)
+			{
+				holderForOutputItem.ItemsCount.text = remainingItems.ToString();
+				return;
+			}
+
+			holderForOutputItem.CurrentItem = null;
+			holderForOutputItem.Icon.sprite = null;
+			holderForOutputItem.ItemName.text = "Empty";
+			holderForOutputItem.ItemsCount.text = "";
 		}
 
-		InventoryCell holderForOutputItem = GetHolderByType(item.ItemType);
-
-		if (holderForOutputItem == null)
-			return;
-
-		if (remainingItems > 0)
+		private InventoryCell GetHolderByType(ItemTypes itemType)
 		{
-			holderForOutputItem.ItemsCount.text = remainingItems.ToString();
-			return;
+			foreach (var holder in _holdersUI)
+			{
+				if (holder.ItemTypeUI == itemType)
+					return holder;
+			}
+
+			Debug.LogWarning(itemType.ToString() + "not found");
+			return null;
 		}
-
-		holderForOutputItem.CurrentItem = null;
-		holderForOutputItem.Icon.sprite = null;
-		holderForOutputItem.ItemName.text = "Empty";
-		holderForOutputItem.ItemsCount.text = "";
-	}
-
-	private InventoryCell GetHolderByType(ItemTypes itemType)
-	{
-		foreach (var holder in _holdersUI)
-		{
-			if (holder.ItemTypeUI == itemType)
-				return holder;
-		}
-
-		Debug.LogWarning(itemType.ToString() +  "not found");
-		return null;
 	}
 }
