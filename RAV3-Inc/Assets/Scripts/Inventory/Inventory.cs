@@ -1,7 +1,7 @@
 ﻿using DG.Tweening;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Inventory : MonoBehaviour
 {
@@ -14,9 +14,8 @@ public class Inventory : MonoBehaviour
 	private Dictionary<Item, InventoryItem> _itemsInInventory = new Dictionary<Item, InventoryItem>();
 	private const float _snapDuration = 1f;
 
-	public static Action<Item> ItemPut;
-	public static Action<Item> ItemTake;
-
+	public static Event<int, string> ItemPut = new Event<int, string>();
+	public static Event<int, string> ItemTake = new Event<int, string>();
 
 	private void Awake()
 	{
@@ -118,9 +117,9 @@ public class Inventory : MonoBehaviour
 			MoveToPoint(tempItem.transform, point.Point).Play();
 			UnHighlightPoint();
 
-			ItemPut?.Invoke(tempItem.Item);
+			ItemPut?.Invoke(tempItem.Item.Id, ItemAction.Put.ToString());
 
-			_inventoryUI.DisplayItem(tempItem.Item, 1);				//Заменить на реальное количество
+			_inventoryUI.DisplayItem(tempItem.Item, 1);             //Заменить на реальное количество
 			return;
 		}
 	}
@@ -192,9 +191,17 @@ public class Inventory : MonoBehaviour
 
 		moveSeq.Play();
 
-		ItemTake?.Invoke(outputItem);
+		ItemTake?.Invoke(outputItem.Id, ItemAction.Take.ToString());
 
 		_inventoryUI.RemoveItem(outputItem, 0);
+	}
 
-	} 
+	private enum ItemAction
+	{
+		Put,
+		Take
+	}
+
+	public class Event<T, K> : UnityEvent<T, K>
+	{ }
 }

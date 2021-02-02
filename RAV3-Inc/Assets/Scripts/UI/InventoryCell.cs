@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.EventSystems;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class InventoryCell : MonoBehaviour
@@ -9,7 +7,6 @@ public class InventoryCell : MonoBehaviour
 	[SerializeField] private ItemTypes _itemTypeUI;
 	[SerializeField] private Text _itemName;
 	[SerializeField] private Text _countItems;
-	[SerializeField] private Button _button;
 
 	public Image Icon => _icon;
 	public ItemTypes ItemTypeUI => _itemTypeUI;
