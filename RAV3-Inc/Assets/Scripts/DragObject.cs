@@ -3,14 +3,18 @@
 public class DragObject : MonoBehaviour
 {
 	[SerializeField] private Collider _myCollider;
-	[SerializeField] private Vector3 _liftingHeight= new Vector3(0, 1f, 0);
+	[SerializeField] private Vector3 _liftingHeight = new Vector3(0, 2f, 0);
 
 	private RaycastHit _hit;
-	private const float _maxDragDistance = 20f;		//Вынести в константы
+	private const float _maxDragDistance = 20f;     //Вынести в константы
+
+	private static DragObject _currentDragObject = null;
+	public static DragObject CurrentDragObject => _currentDragObject;
 
 	private void OnMouseDown()
 	{
-		transform.Translate(Vector3.up * 2, Space.World);
+		transform.Translate(_liftingHeight, Space.World);
+		_currentDragObject = this;
 	}
 
 	private void OnMouseDrag()
@@ -23,8 +27,11 @@ public class DragObject : MonoBehaviour
 			transform.position = _hit.point;
 			transform.Translate(_liftingHeight, Space.World);
 		}
+	}
 
-		//Запоминать крайнюю точку при вызоде за зону дарага и держать объект на ней
+	private void OnMouseUp()
+	{
+		_currentDragObject = null;
 	}
 }
  
