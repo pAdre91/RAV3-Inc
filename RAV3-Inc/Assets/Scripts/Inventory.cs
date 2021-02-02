@@ -5,13 +5,14 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
 	[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
+	[SerializeField] private Collider _bagCollider;
 
 	private List<Item> _itemsInInventory = new List<Item>();
 	private const float _snapDuration = 1f;
 
 	private void Awake()
 	{
-		//Init();
+		Init();
 	}
 
 	private void OnDestroy()
@@ -73,6 +74,9 @@ public class Inventory : MonoBehaviour
 
 	private void PutItem(DragObject inputObject)
 	{
+		if (!IsMouseOnBag())
+			return;
+
 		InventoryItem tempItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
 		if (tempItem == null)
 			return;
@@ -89,6 +93,22 @@ public class Inventory : MonoBehaviour
 			UnHighlightPoint();
 			return;
 		}
+	}
+
+	private bool IsMouseOnBag()
+	{
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+
+		if (Physics.Raycast(ray, out hit))
+		{
+			if (hit.collider == _bagCollider)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void TurnOffInteractive(InventoryItem inventoryItem)
