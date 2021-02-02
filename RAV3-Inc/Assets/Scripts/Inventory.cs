@@ -11,7 +11,7 @@ public class Inventory : MonoBehaviour
 	[SerializeField] private Collider _bagCollider;
 	[SerializeField] private Transform _unloadingPoint;
 
-	private List<InventoryItem> _itemsInInventory = new List<InventoryItem>();
+	private Dictionary<Item, InventoryItem> _itemsInInventory = new Dictionary<Item, InventoryItem>();
 	private const float _snapDuration = 1f;
 
 	public static Action<Item> ItemPut;
@@ -41,6 +41,7 @@ public class Inventory : MonoBehaviour
 	private void Init()
 	{
 		DragObject.ObjectDropped += PutItem;
+		InventoryUI.TakeItem += TakeItem;
 
 		if (_inventoryUI == null)
 		{
@@ -52,6 +53,7 @@ public class Inventory : MonoBehaviour
 	private void PrepareToDestroy()
 	{
 		DragObject.ObjectDropped -= PutItem;
+		InventoryUI.TakeItem -= TakeItem;
 	}
 
 	#region Highlight
@@ -110,7 +112,7 @@ public class Inventory : MonoBehaviour
 			if (point.PointType != tempItem.GetInventoryType())
 				continue;
 
-			_itemsInInventory.Add(tempItem);
+			_itemsInInventory.Add(tempItem.Item, tempItem);
 
 			TurnOffInteractive(tempItem);
 			MoveToPoint(tempItem.transform, point.Point).Play();
@@ -165,21 +167,34 @@ public class Inventory : MonoBehaviour
 		return moveSequence;
 	}
 
-	private void TakeItem(InventoryItem outputItem)
+	private void TakeItem(Item outputItem)
 	{
-		if (!_itemsInInventory.Contains(outputItem))
+		if (outputItem == null)
 		{
-			Debug.LogWarning("Item" + outputItem.Item.ItemName + " not found");
+			Debug.LogWarning("Take empty item");
 			return;
 		}
 
-		var moveSeq = MoveToPoint(outputItem.transform, _unloadingPoint);
-		moveSeq.AppendCallback(() => TurnOnInteractive(outputItem));
+		if (!_itemsInInventory.ContainsKey(outputItem))
+		{
+			Debug.LogWarning("Item" + outputItem.ItemName + " not found");
+			return;
+		}
+
+		var moveSeq = MoveToPoint(_itemsInInventory[outputItem].transform, _unloadingPoint);
+
+		moveSeq.AppendCallback(() =>
+		{
+			TurnOnInteractive(_itemsInInventory[outputItem]);
+			_itemsInInventory.Remove(outputItem);
+		});
+
+
 		moveSeq.Play();
 
-		ItemTake?.Invoke(outputItem.Item);
+		ItemTake?.Invoke(outputItem);
 
-		_inventoryUI.RemoveItem(outputItem.Item, 0);
-		_itemsInInventory.Remove(outputItem);
+		_inventoryUI.RemoveItem(outputItem, 0);
+
 	} 
 }

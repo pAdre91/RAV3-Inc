@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryUI : MonoBehaviour
 {
-	[SerializeField] List<UIHolder> _holdersUI = new List<UIHolder>();
+	[SerializeField] List<InventoryCell> _holdersUI;
+
+	public static Action<Item> TakeItem;
 
 	public void DisplayInventory()
 	{
@@ -12,40 +15,62 @@ public class InventoryUI : MonoBehaviour
 
 	public void CloseInventory()
 	{
+		foreach (var cell in _holdersUI)
+		{
+			if (RectTransformUtility.RectangleContainsScreenPoint(cell.GetComponent<RectTransform>(), Input.mousePosition) && cell.CurrentItem != null)
+			{
+				TakeItem?.Invoke(cell.CurrentItem);
+				break;
+			}
+		}
+
 		gameObject.SetActive(false);
 	}
 
 	public void DisplayItem(Item item, int count)
 	{
-		UIHolder holderForInputItem = GetHolderByType(item.ItemType);
+		if (item == null)
+		{
+			Debug.LogWarning("Empty item to remove");
+			return;
+		}
+		InventoryCell holderForInputItem = GetHolderByType(item.ItemType);
 
 		if (holderForInputItem == null)
 			return;
 
+		holderForInputItem.CurrentItem = item;
 		holderForInputItem.Icon.sprite = item.Icon;
 		holderForInputItem.ItemName.text = item.ItemName;
 		holderForInputItem.ItemsCount.text = count.ToString();
 	}
 
-	public void RemoveItem(Item item, int remainingItems)
+	public void RemoveItem(Item item, int remainingItems = 0)
 	{
-		UIHolder holderForInputItem = GetHolderByType(item.ItemType);
+		if (item == null)
+		{
+			Debug.LogWarning("Empty item to remove");
+			return;
+		}
 
-		if (holderForInputItem == null)
+		InventoryCell holderForOutputItem = GetHolderByType(item.ItemType);
+
+		if (holderForOutputItem == null)
 			return;
 
 		if (remainingItems > 0)
 		{
-			holderForInputItem.ItemsCount.text = remainingItems.ToString();
+			holderForOutputItem.ItemsCount.text = remainingItems.ToString();
 			return;
 		}
 
-		holderForInputItem.Icon.sprite = null;
-		holderForInputItem.ItemName.text = "Empty";
-		holderForInputItem.ItemsCount.text = "";
+		holderForOutputItem.CurrentItem = null;
+		holderForOutputItem.Icon.sprite = null;
+		holderForOutputItem.ItemName.text = "Empty";
+		holderForOutputItem.ItemsCount.text = "";
 	}
 
-	private UIHolder GetHolderByType(ItemTypes itemType)
+	private InventoryCell GetHolderByType(ItemTypes itemType)
 	{
 		foreach (var holder in _holdersUI)
 		{
