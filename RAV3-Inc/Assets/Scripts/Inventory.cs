@@ -6,8 +6,9 @@ public class Inventory : MonoBehaviour
 {
 	[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
 	[SerializeField] private Collider _bagCollider;
+	[SerializeField] private Transform _unloadingPoint;
 
-	private List<Item> _itemsInInventory = new List<Item>();
+	private List<InventoryItem> _itemsInInventory = new List<InventoryItem>();
 	private const float _snapDuration = 1f;
 
 	private void Awake()
@@ -86,10 +87,10 @@ public class Inventory : MonoBehaviour
 			if (point.PointType != tempItem.GetInventoryType())
 				continue;
 
-			_itemsInInventory.Add(tempItem.Item);
+			_itemsInInventory.Add(tempItem);
 
 			TurnOffInteractive(tempItem);
-			MoveToSnapPoint(tempItem.gameObject.transform, point);
+			MoveToPoint(tempItem.transform, point.Point).Play();
 			UnHighlightPoint();
 			return;
 		}
@@ -119,21 +120,36 @@ public class Inventory : MonoBehaviour
 		inventoryItem.Collider.enabled = false;
 	}
 
-	private void MoveToSnapPoint(Transform inputObject, SnapPoint endPoint)
+	private void TurnOnInteractive(InventoryItem inventoryItem)
 	{
-		inputObject.gameObject.transform.DOMove(endPoint.Point.position, _snapDuration);
-		inputObject.gameObject.transform.DORotateQuaternion(endPoint.Point.rotation, _snapDuration);
+		inventoryItem.Rigidbody.freezeRotation = false;
+		inventoryItem.Rigidbody.constraints = RigidbodyConstraints.None;
+
+		inventoryItem.Collider.enabled = true;
 	}
 
-	private void TakeItem(Item outputItem)
+	private Sequence MoveToPoint(Transform inputObject, Transform endPoint)
+	{
+		Sequence moveSequence = DOTween.Sequence();
+
+		moveSequence.Append(inputObject.gameObject.transform.DOMove(endPoint.position, _snapDuration));
+		moveSequence.Join(inputObject.gameObject.transform.DORotateQuaternion(endPoint.rotation, _snapDuration));
+
+		return moveSequence;
+	}
+
+	private void TakeItem(InventoryItem outputItem)
 	{
 		if (!_itemsInInventory.Contains(outputItem))
 		{
-			Debug.LogWarning("Item" + outputItem.ItemName + " not found");
+			Debug.LogWarning("Item" + outputItem.Item.ItemName + " not found");
 			return;
 		}
 
-		Instantiate(outputItem.Prefab);		//Заменить на пулл
+		var moveSeq = MoveToPoint(outputItem.transform, _unloadingPoint);
+		moveSeq.AppendCallback(() => TurnOnInteractive(outputItem));
+		moveSeq.Play();
+
 		_itemsInInventory.Remove(outputItem);
-	}
+	} 
 }

@@ -295,6 +295,7 @@ MonoBehaviour:
     _pointType: 3
     _pointRenderer: {fileID: 6073999862782976366}
   _bagCollider: {fileID: 3510244708454226414}
+  _unloadingPoint: {fileID: 0}
 --- !u!1 &8913545871528191008
 GameObject:
   m_ObjectHideFlags: 0
