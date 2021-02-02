@@ -138,4 +138,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1697bbb7f30d98d4e8fc154ba2dff468, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _myRigitbody: {fileID: 359919184}
+  _myCollider: {fileID: 359919185}
   _item: {fileID: 11400000, guid: 6c3b0b046a6676742a886b70202c1873, type: 2}

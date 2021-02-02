@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class DragObject : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class DragObject : MonoBehaviour
 
 	private static DragObject _currentDragObject = null;
 	public static DragObject CurrentDragObject => _currentDragObject;
+
+	public static Action<DragObject> ObjectDropped;
 
 	private void OnMouseDown()
 	{
@@ -31,6 +34,7 @@ public class DragObject : MonoBehaviour
 
 	private void OnMouseUp()
 	{
+		ObjectDropped?.Invoke(_currentDragObject);
 		_currentDragObject = null;
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DG.Tweening;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -6,11 +7,26 @@ public class Inventory : MonoBehaviour
 	[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
 
 	private List<Item> _itemsInInventory = new List<Item>();
-	private InventoryItem _tempInventaryItem = null;
+	private const float _snapDuration = 1f;
 
-	private void OnCollisionEnter(Collision collision)
+	private void Awake()
 	{
-		PutItem(collision.gameObject.GetComponent<InventoryItem>());
+		Init();
+	}
+
+	private void OnDestroy()
+	{
+		PrepareToDestroy();
+	}
+
+	private void Init()
+	{
+		DragObject.ObjectDropped += PutItem;
+	}
+
+	private void PrepareToDestroy()
+	{
+		DragObject.ObjectDropped -= PutItem;
 	}
 
 	#region Highlight
@@ -26,19 +42,19 @@ public class Inventory : MonoBehaviour
 
 	private void HighlightPoint()
 	{
-		_tempInventaryItem = null;
+		InventoryItem tempInventaryItem = null;
 
 		if (DragObject.CurrentDragObject == null)
 			return;
 
-		_tempInventaryItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
+		tempInventaryItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
 
-		if (_tempInventaryItem == null)
+		if (tempInventaryItem == null)
 			return;
 
 		foreach (var point in _snapPoints)
 		{
-			if (point.PointType != _tempInventaryItem.GetInventoryType())
+			if (point.PointType != tempInventaryItem.GetInventoryType())
 				continue;
 
 			point.PointRenderer.enabled = true;
@@ -54,13 +70,38 @@ public class Inventory : MonoBehaviour
 	}
 	#endregion
 
-	private void PutItem(InventoryItem inputItem)
+
+	private void PutItem(DragObject inputObject)
 	{
-		if (inputItem == null)
+		InventoryItem tempItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
+		if (tempItem == null)
 			return;
 
-		_itemsInInventory.Add(inputItem.Item);
-		Destroy(inputItem.gameObject);		//Заменить на пулл
+		foreach (var point in _snapPoints)
+		{
+			if (point.PointType != tempItem.GetInventoryType())
+				continue;
+
+			_itemsInInventory.Add(tempItem.Item);
+
+			TurnOffInteractive(tempItem);
+			MoveToSnapPoint(tempItem.gameObject.transform, point);
+			return;
+		}
+	}
+
+	private void TurnOffInteractive(InventoryItem inventoryItem)
+	{
+		inventoryItem.Rigidbody.freezeRotation = true;
+		inventoryItem.Rigidbody.constraints = RigidbodyConstraints.FreezePosition;
+
+		inventoryItem.Collider.enabled = false;
+	}
+
+	private void MoveToSnapPoint(Transform inputObject, SnapPoint endPoint)
+	{
+		inputObject.gameObject.transform.DOMove(endPoint.Point.position, _snapDuration);
+		inputObject.gameObject.transform.DORotateQuaternion(endPoint.Point.rotation, _snapDuration);
 	}
 
 	private void TakeItem(Item outputItem)
