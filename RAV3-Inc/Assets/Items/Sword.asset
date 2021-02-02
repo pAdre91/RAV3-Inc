@@ -17,4 +17,4 @@ MonoBehaviour:
   _itemName: Bronze sword
   _weight: 1.7
   _itemType: 1
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 6d17c7fc3629c1b48897324b1817c246, type: 3}

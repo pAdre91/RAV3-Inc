@@ -17,4 +17,4 @@ MonoBehaviour:
   _itemName: Shield of  stone
   _weight: 2
   _itemType: 2
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: e0ad9c51044830a4194252cd3e57de2a, type: 3}

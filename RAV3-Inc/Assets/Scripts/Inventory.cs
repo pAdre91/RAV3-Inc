@@ -1,9 +1,12 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+	[SerializeField] private InventoryUI _inventoryUI = null;
+
 	[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
 	[SerializeField] private Collider _bagCollider;
 	[SerializeField] private Transform _unloadingPoint;
@@ -11,9 +14,23 @@ public class Inventory : MonoBehaviour
 	private List<InventoryItem> _itemsInInventory = new List<InventoryItem>();
 	private const float _snapDuration = 1f;
 
+	public static Action<Item> ItemPut;
+	public static Action<Item> ItemTake;
+
+
 	private void Awake()
 	{
 		Init();
+	}
+
+	private void OnMouseDown()
+	{
+		_inventoryUI.DisplayInventory();
+	}
+
+	private void OnMouseUp()
+	{
+		_inventoryUI.CloseInventory();
 	}
 
 	private void OnDestroy()
@@ -24,6 +41,12 @@ public class Inventory : MonoBehaviour
 	private void Init()
 	{
 		DragObject.ObjectDropped += PutItem;
+
+		if (_inventoryUI == null)
+		{
+			GameObject.FindObjectOfType(typeof(InventoryUI));
+			Debug.LogWarning("Inventory UI not defined");
+		}
 	}
 
 	private void PrepareToDestroy()
@@ -92,6 +115,10 @@ public class Inventory : MonoBehaviour
 			TurnOffInteractive(tempItem);
 			MoveToPoint(tempItem.transform, point.Point).Play();
 			UnHighlightPoint();
+
+			ItemPut?.Invoke(tempItem.Item);
+
+			_inventoryUI.DisplayItem(tempItem.Item, 1);				//Заменить на реальное количество
 			return;
 		}
 	}
@@ -150,6 +177,9 @@ public class Inventory : MonoBehaviour
 		moveSeq.AppendCallback(() => TurnOnInteractive(outputItem));
 		moveSeq.Play();
 
+		ItemTake?.Invoke(outputItem.Item);
+
+		_inventoryUI.RemoveItem(outputItem.Item, 0);
 		_itemsInInventory.Remove(outputItem);
 	} 
 }
