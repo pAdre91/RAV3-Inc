@@ -4,6 +4,7 @@ using UnityEngine;
 public class DragObject : MonoBehaviour
 {
 	[SerializeField] private Collider _myCollider;
+	[SerializeField] private Rigidbody _myRigidbody;
 	[SerializeField] private Vector3 _liftingHeight = new Vector3(0, 2f, 0);
 
 	private RaycastHit _hit;
@@ -27,14 +28,21 @@ public class DragObject : MonoBehaviour
 			if (_hit.collider == _myCollider)
 				return;
 
-			transform.position = _hit.point;
-			transform.Translate(_liftingHeight, Space.World);
+			_myRigidbody.freezeRotation = true;
+			_myRigidbody.useGravity = false;
+
+			_myRigidbody.MovePosition(_hit.point);
+			_myRigidbody.MovePosition(_myRigidbody.position + _liftingHeight);
 		}
 	}
 
 	private void OnMouseUp()
 	{
 		ObjectDropped?.Invoke(_currentDragObject);
+
+		_myRigidbody.freezeRotation = false;
+		_myRigidbody.useGravity = true;
+
 		_currentDragObject = null;
 	}
 }

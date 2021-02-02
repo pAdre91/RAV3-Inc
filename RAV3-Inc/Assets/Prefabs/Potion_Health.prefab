@@ -125,6 +125,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _myCollider: {fileID: 1981986133}
+  _myRigidbody: {fileID: 1981986129}
   _liftingHeight: {x: 0, y: 2, z: 0}
 --- !u!114 &1247229780
 MonoBehaviour:

@@ -10,6 +10,11 @@ public class InventoryItem : MonoBehaviour
 	public Rigidbody Rigidbody => _myRigitbody;
 	public Collider Collider => _myCollider;
 
+	private void Awake()
+	{
+		_myRigitbody.mass = _item.Weight;
+	}
+
 	public ItemTypes GetInventoryType()
 	{
 		return _item.ItemType;

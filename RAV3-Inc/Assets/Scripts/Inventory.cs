@@ -11,7 +11,7 @@ public class Inventory : MonoBehaviour
 
 	private void Awake()
 	{
-		Init();
+		//Init();
 	}
 
 	private void OnDestroy()
@@ -86,6 +86,7 @@ public class Inventory : MonoBehaviour
 
 			TurnOffInteractive(tempItem);
 			MoveToSnapPoint(tempItem.gameObject.transform, point);
+			UnHighlightPoint();
 			return;
 		}
 	}
