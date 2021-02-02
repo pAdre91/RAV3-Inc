@@ -67,6 +67,8 @@
     <Compile Include="Assets\Scripts\InventoryItem.cs" />
     <Compile Include="Assets\Scripts\Item.cs" />
     <Compile Include="Assets\Scripts\SnapPoint.cs" />
+    <Compile Include="Assets\Scripts\UI\InventoryCell.cs" />
+    <Compile Include="Assets\Scripts\UI\InventoryUI.cs" />
     <Reference Include="UnityEngine">
       <HintPath>B:/Unity/UnityEditors/2019.4.18f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
