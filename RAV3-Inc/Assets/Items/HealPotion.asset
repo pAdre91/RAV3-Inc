@@ -16,5 +16,5 @@ MonoBehaviour:
   _id: 3
   _itemName: Heal potion
   _weight: 0.1
-  _itemType: 0
+  _itemType: 3
   _icon: {fileID: 0}
