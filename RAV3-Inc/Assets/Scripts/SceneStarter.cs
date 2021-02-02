@@ -1,30 +1,35 @@
-﻿using UnityEngine;
+﻿using Core;
+using GameCore;
+using UnityEngine;
 
-public class SceneStarter : MonoBehaviour
+namespace GameCore
 {
-	private Server _server;
-
-	private void Awake()
+	public class SceneStarter : MonoBehaviour
 	{
-		Init();
-	}
+		private Server _server;
 
-	private void OnDestroy()
-	{
-		PrepareToDestroy();
-	}
+		private void Awake()
+		{
+			Init();
+		}
 
-	public void Init()
-	{
-		_server = new Server(GameSettings.ServerUrl, GameSettings.Auth);
+		private void OnDestroy()
+		{
+			PrepareToDestroy();
+		}
 
-		Inventory.ItemPut.AddListener(_server.SendAction);
-		Inventory.ItemTake.AddListener(_server.SendAction);
-	}
+		public void Init()
+		{
+			_server = new Server(GameSettings.ServerUrl, GameSettings.Auth);
 
-	private void PrepareToDestroy()
-	{
-		Inventory.ItemPut.RemoveListener(_server.SendAction);
-		Inventory.ItemTake.RemoveListener(_server.SendAction);
+			Inventory.ItemPut.AddListener(_server.SendAction);
+			Inventory.ItemTake.AddListener(_server.SendAction);
+		}
+
+		private void PrepareToDestroy()
+		{
+			Inventory.ItemPut.RemoveListener(_server.SendAction);
+			Inventory.ItemTake.RemoveListener(_server.SendAction);
+		}
 	}
 }

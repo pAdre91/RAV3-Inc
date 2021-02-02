@@ -1,49 +1,51 @@
 ﻿using System;
 using UnityEngine;
 
-public class DragObject : MonoBehaviour
+namespace Components
 {
-	[SerializeField] private Collider _myCollider;
-	[SerializeField] private Rigidbody _myRigidbody;
-	[SerializeField] private Vector3 _liftingHeight = new Vector3(0, 2f, 0);
-
-	private RaycastHit _hit;
-	private const float _maxDragDistance = 20f;     //Вынести в константы
-
-	private static DragObject _currentDragObject = null;
-	public static DragObject CurrentDragObject => _currentDragObject;
-
-	public static Action<DragObject> ObjectDropped;
-
-	private void OnMouseDown()
+	public class DragObject : MonoBehaviour
 	{
-		transform.Translate(_liftingHeight, Space.World);
-		_currentDragObject = this;
-	}
+		[SerializeField] private Collider _myCollider;
+		[SerializeField] private Rigidbody _myRigidbody;
+		[SerializeField] private Vector3 _liftingHeight = GameSettings.LiftingHeight;
 
-	private void OnMouseDrag()
-	{
-		if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out _hit, _maxDragDistance))
+		private RaycastHit _hit;
+		private float _maxDragDistance = GameSettings.DragDistance;
+
+		private static DragObject _currentDragObject = null;
+		public static DragObject CurrentDragObject => _currentDragObject;
+
+		public static Action<DragObject> ObjectDropped;
+
+		private void OnMouseDown()
 		{
-			if (_hit.collider == _myCollider)
-				return;
+			transform.Translate(_liftingHeight, Space.World);
+			_currentDragObject = this;
+		}
 
-			_myRigidbody.freezeRotation = true;
-			_myRigidbody.useGravity = false;
+		private void OnMouseDrag()
+		{
+			if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out _hit, _maxDragDistance))
+			{
+				if (_hit.collider == _myCollider)
+					return;
 
-			_myRigidbody.MovePosition(_hit.point);
-			_myRigidbody.MovePosition(_myRigidbody.position + _liftingHeight);
+				_myRigidbody.freezeRotation = true;
+				_myRigidbody.useGravity = false;
+
+				_myRigidbody.MovePosition(_hit.point);
+				_myRigidbody.MovePosition(_myRigidbody.position + _liftingHeight);
+			}
+		}
+
+		private void OnMouseUp()
+		{
+			ObjectDropped?.Invoke(_currentDragObject);
+
+			_myRigidbody.freezeRotation = false;
+			_myRigidbody.useGravity = true;
+
+			_currentDragObject = null;
 		}
 	}
-
-	private void OnMouseUp()
-	{
-		ObjectDropped?.Invoke(_currentDragObject);
-
-		_myRigidbody.freezeRotation = false;
-		_myRigidbody.useGravity = true;
-
-		_currentDragObject = null;
-	}
 }
- 

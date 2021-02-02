@@ -1,14 +1,17 @@
 ﻿using System;
 using UnityEngine;
 
-[Serializable]
-public class SnapPoint
+namespace GameCore
 {
-	[SerializeField] private Transform _point;
-	[SerializeField] private ItemTypes _pointType;
-	[SerializeField] private Renderer _pointRenderer;
+	[Serializable]
+	public class SnapPoint
+	{
+		[SerializeField] private Transform _point;
+		[SerializeField] private ItemTypes _pointType;
+		[SerializeField] private Renderer _pointRenderer;
 
-	public Transform Point => _point;
-	public ItemTypes PointType => _pointType;
-	public Renderer PointRenderer => _pointRenderer;
+		public Transform Point => _point;
+		public ItemTypes PointType => _pointType;
+		public Renderer PointRenderer => _pointRenderer;
+	}
 }

@@ -1,207 +1,212 @@
-﻿using DG.Tweening;
+﻿using Components;
+using DG.Tweening;
 using System.Collections.Generic;
+using UI;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Inventory : MonoBehaviour
+namespace GameCore
 {
-	[SerializeField] private InventoryUI _inventoryUI = null;
-
-	[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
-	[SerializeField] private Collider _bagCollider;
-	[SerializeField] private Transform _unloadingPoint;
-
-	private Dictionary<Item, InventoryItem> _itemsInInventory = new Dictionary<Item, InventoryItem>();
-	private const float _snapDuration = 1f;
-
-	public static Event<int, string> ItemPut = new Event<int, string>();
-	public static Event<int, string> ItemTake = new Event<int, string>();
-
-	private void Awake()
+	public class Inventory : MonoBehaviour
 	{
-		Init();
-	}
+		[SerializeField] private InventoryUI _inventoryUI = null;
 
-	private void OnMouseDown()
-	{
-		_inventoryUI.DisplayInventory();
-	}
+		[SerializeField] private List<SnapPoint> _snapPoints = new List<SnapPoint>();
+		[SerializeField] private Collider _bagCollider;
+		[SerializeField] private Transform _unloadingPoint;
 
-	private void OnMouseUp()
-	{
-		_inventoryUI.CloseInventory();
-	}
+		private Dictionary<Item, InventoryItem> _itemsInInventory = new Dictionary<Item, InventoryItem>();
+		private const float _snapDuration = 1f;
 
-	private void OnDestroy()
-	{
-		PrepareToDestroy();
-	}
+		public static Event<int, string> ItemPut = new Event<int, string>();
+		public static Event<int, string> ItemTake = new Event<int, string>();
 
-	private void Init()
-	{
-		DragObject.ObjectDropped += PutItem;
-		InventoryUI.TakeItem += TakeItem;
-
-		if (_inventoryUI == null)
+		private void Awake()
 		{
-			GameObject.FindObjectOfType(typeof(InventoryUI));
-			Debug.LogWarning("Inventory UI not defined");
+			Init();
 		}
-	}
 
-	private void PrepareToDestroy()
-	{
-		DragObject.ObjectDropped -= PutItem;
-		InventoryUI.TakeItem -= TakeItem;
-	}
-
-	#region Highlight
-	private void OnMouseEnter()
-	{
-		HighlightPoint();
-	}
-
-	private void OnMouseExit()
-	{
-		UnHighlightPoint();
-	}
-
-	private void HighlightPoint()
-	{
-		InventoryItem tempInventaryItem = null;
-
-		if (DragObject.CurrentDragObject == null)
-			return;
-
-		tempInventaryItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
-
-		if (tempInventaryItem == null)
-			return;
-
-		foreach (var point in _snapPoints)
+		private void OnMouseDown()
 		{
-			if (point.PointType != tempInventaryItem.GetInventoryType())
-				continue;
-
-			point.PointRenderer.enabled = true;
+			_inventoryUI.DisplayInventory();
 		}
-	}
 
-	private void UnHighlightPoint()
-	{
-		foreach (var point in _snapPoints)
+		private void OnMouseUp()
 		{
-			point.PointRenderer.enabled = false; ;
+			_inventoryUI.CloseInventory();
 		}
-	}
-	#endregion
 
-
-	private void PutItem(DragObject inputObject)
-	{
-		if (!IsMouseOnBag())
-			return;
-
-		InventoryItem tempItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
-		if (tempItem == null)
-			return;
-
-		foreach (var point in _snapPoints)
+		private void OnDestroy()
 		{
-			if (point.PointType != tempItem.GetInventoryType())
-				continue;
-
-			_itemsInInventory.Add(tempItem.Item, tempItem);
-
-			TurnOffInteractive(tempItem);
-			MoveToPoint(tempItem.transform, point.Point).Play();
-			UnHighlightPoint();
-
-			ItemPut?.Invoke(tempItem.Item.Id, ItemAction.Put.ToString());
-
-			_inventoryUI.DisplayItem(tempItem.Item, 1);             //Заменить на реальное количество
-			return;
+			PrepareToDestroy();
 		}
-	}
 
-	private bool IsMouseOnBag()
-	{
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		RaycastHit hit;
-
-		if (Physics.Raycast(ray, out hit))
+		private void Init()
 		{
-			if (hit.collider == _bagCollider)
+			DragObject.ObjectDropped += PutItem;
+			InventoryUI.TakeItem += TakeItem;
+
+			if (_inventoryUI == null)
 			{
-				return true;
+				GameObject.FindObjectOfType(typeof(InventoryUI));
+				Debug.LogWarning("Inventory UI not defined");
 			}
 		}
 
-		return false;
-	}
-
-	private void TurnOffInteractive(InventoryItem inventoryItem)
-	{
-		inventoryItem.Rigidbody.freezeRotation = true;
-		inventoryItem.Rigidbody.constraints = RigidbodyConstraints.FreezePosition;
-
-		inventoryItem.Collider.enabled = false;
-	}
-
-	private void TurnOnInteractive(InventoryItem inventoryItem)
-	{
-		inventoryItem.Rigidbody.freezeRotation = false;
-		inventoryItem.Rigidbody.constraints = RigidbodyConstraints.None;
-
-		inventoryItem.Collider.enabled = true;
-	}
-
-	private Sequence MoveToPoint(Transform inputObject, Transform endPoint)
-	{
-		Sequence moveSequence = DOTween.Sequence();
-
-		moveSequence.Append(inputObject.gameObject.transform.DOMove(endPoint.position, _snapDuration));
-		moveSequence.Join(inputObject.gameObject.transform.DORotateQuaternion(endPoint.rotation, _snapDuration));
-
-		return moveSequence;
-	}
-
-	private void TakeItem(Item outputItem)
-	{
-		if (outputItem == null)
+		private void PrepareToDestroy()
 		{
-			Debug.LogWarning("Take empty item");
-			return;
+			DragObject.ObjectDropped -= PutItem;
+			InventoryUI.TakeItem -= TakeItem;
 		}
 
-		if (!_itemsInInventory.ContainsKey(outputItem))
+		#region Highlight
+		private void OnMouseEnter()
 		{
-			Debug.LogWarning("Item" + outputItem.ItemName + " not found");
-			return;
+			HighlightPoint();
 		}
 
-		var moveSeq = MoveToPoint(_itemsInInventory[outputItem].transform, _unloadingPoint);
-
-		moveSeq.AppendCallback(() =>
+		private void OnMouseExit()
 		{
-			TurnOnInteractive(_itemsInInventory[outputItem]);
-			_itemsInInventory.Remove(outputItem);
-		});
+			UnHighlightPoint();
+		}
+
+		private void HighlightPoint()
+		{
+			InventoryItem tempInventaryItem = null;
+
+			if (DragObject.CurrentDragObject == null)
+				return;
+
+			tempInventaryItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
+
+			if (tempInventaryItem == null)
+				return;
+
+			foreach (var point in _snapPoints)
+			{
+				if (point.PointType != tempInventaryItem.GetInventoryType())
+					continue;
+
+				point.PointRenderer.enabled = true;
+			}
+		}
+
+		private void UnHighlightPoint()
+		{
+			foreach (var point in _snapPoints)
+			{
+				point.PointRenderer.enabled = false; ;
+			}
+		}
+		#endregion
 
 
-		moveSeq.Play();
+		private void PutItem(DragObject inputObject)
+		{
+			if (!IsMouseOnBag())
+				return;
 
-		ItemTake?.Invoke(outputItem.Id, ItemAction.Take.ToString());
+			InventoryItem tempItem = DragObject.CurrentDragObject.GetComponent<InventoryItem>();
+			if (tempItem == null)
+				return;
 
-		_inventoryUI.RemoveItem(outputItem, 0);
+			foreach (var point in _snapPoints)
+			{
+				if (point.PointType != tempItem.GetInventoryType())
+					continue;
+
+				_itemsInInventory.Add(tempItem.Item, tempItem);
+
+				TurnOffInteractive(tempItem);
+				MoveToPoint(tempItem.transform, point.Point).Play();
+				UnHighlightPoint();
+
+				ItemPut?.Invoke(tempItem.Item.Id, ItemAction.Put.ToString());
+
+				_inventoryUI.DisplayItem(tempItem.Item, 1);		//1 заменить на реальное количество имеющихся объектов, если это потребуется
+				return;
+			}
+		}
+
+		private bool IsMouseOnBag()
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+
+			if (Physics.Raycast(ray, out hit))
+			{
+				if (hit.collider == _bagCollider)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private void TurnOffInteractive(InventoryItem inventoryItem)
+		{
+			inventoryItem.Rigidbody.freezeRotation = true;
+			inventoryItem.Rigidbody.constraints = RigidbodyConstraints.FreezePosition;
+
+			inventoryItem.Collider.enabled = false;
+		}
+
+		private void TurnOnInteractive(InventoryItem inventoryItem)
+		{
+			inventoryItem.Rigidbody.freezeRotation = false;
+			inventoryItem.Rigidbody.constraints = RigidbodyConstraints.None;
+
+			inventoryItem.Collider.enabled = true;
+		}
+
+		private Sequence MoveToPoint(Transform inputObject, Transform endPoint)
+		{
+			Sequence moveSequence = DOTween.Sequence();
+
+			moveSequence.Append(inputObject.gameObject.transform.DOMove(endPoint.position, _snapDuration));
+			moveSequence.Join(inputObject.gameObject.transform.DORotateQuaternion(endPoint.rotation, _snapDuration));
+
+			return moveSequence;
+		}
+
+		private void TakeItem(Item outputItem)
+		{
+			if (outputItem == null)
+			{
+				Debug.LogWarning("Take empty item");
+				return;
+			}
+
+			if (!_itemsInInventory.ContainsKey(outputItem))
+			{
+				Debug.LogWarning("Item" + outputItem.ItemName + " not found");
+				return;
+			}
+
+			var moveSeq = MoveToPoint(_itemsInInventory[outputItem].transform, _unloadingPoint);
+
+			moveSeq.AppendCallback(() =>
+			{
+				TurnOnInteractive(_itemsInInventory[outputItem]);
+				_itemsInInventory.Remove(outputItem);
+			});
+
+
+			moveSeq.Play();
+
+			ItemTake?.Invoke(outputItem.Id, ItemAction.Take.ToString());
+
+			_inventoryUI.RemoveItem(outputItem, 0);
+		}
+
+		private enum ItemAction
+		{
+			Put,
+			Take
+		}
+
+		public class Event<T, K> : UnityEvent<T, K>
+		{ }
 	}
-
-	private enum ItemAction
-	{
-		Put,
-		Take
-	}
-
-	public class Event<T, K> : UnityEvent<T, K>
-	{ }
 }
